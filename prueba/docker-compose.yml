@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  db-mongo:
+    image: mongo:latest
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+    ports:
+      - "${MONGO_DB_PORT}:27017"
+    volumes:
+      - ./mongo-data:/data/db
+    env_file:
+      - ./.env
+    networks:
+      - library-network
+
+  library-service:
+    build:
+      context: ./prueba-tecnica
+    container_name: prueba-tecnica
+    ports:
+      - "3003:3003"
+    environment:
+      MONGO_HOST: db-mongo
+      MONGO_PORT: 27017
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+    depends_on:
+      - db-mongo
+    env_file:
+      - ./.env
+    volumes:
+      - ./prueba-tecnica:/app
+      - /app/node_modules
+    networks:
+      - library-network
+
+networks:
+  library-network:
+    driver: bridge
